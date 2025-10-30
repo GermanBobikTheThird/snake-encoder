@@ -15,6 +15,7 @@ Input text, watch it slither into encoded patterns. The snake algorithm weaves y
 - ⚡ Real-time transformation  
 
 ## Usage
+[Open encoder](https://germanbobikthethird.github.io/snake-encoder/)
 
 1. Enter your text
 2. Set the number of rows
