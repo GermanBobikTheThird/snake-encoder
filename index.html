@@ -49,7 +49,6 @@
             height: 100%;
             z-index: -1;
             pointer-events: none;
-            /* Оптимизация для мобильных */
             transform: translate3d(0, 0, 0);
             backface-visibility: hidden;
             perspective: 1000;
@@ -61,14 +60,11 @@
             height: 1px;
             border-radius: 2px;
             background-color: white;
-            /* Упрощенная анимация */
             animation: twinkle 3s infinite ease-in-out;
-            /* Оптимизация анимации */
             will-change: opacity;
             transform: translate3d(0, 0, 0);
         }
 
-        /* CSS анимация вместо JS */
         @keyframes twinkle {
             0%, 100% { opacity: 0.1; }
             50% { opacity: 0.7; }
@@ -115,6 +111,7 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            position: relative;
         }
 
         label {
@@ -137,6 +134,36 @@
 
         textarea {
             min-height: 100px;
+            padding-right: 35px;
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 6px;
+            top: 40px;
+            width: 24px;
+            height: 24px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: var(--border-width) solid var(--border-color);
+            border-radius: calc(var(--border-radius) / 2); 
+            color: var(--text-color);
+            font-size: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.7;
+            transition: var(--transition);
+            padding: 0;
+            box-shadow: var(--box-shadow);
+            backdrop-filter: blur(5px);
+        }
+
+        .clear-btn:focus {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: var(--text-color);
+            outline: none;
         }
 
         button {
@@ -156,7 +183,17 @@
             backdrop-filter: blur(5px);
         }
 
-        button:hover {
+        button:hover:not(:disabled) {
+            background-color: var(--text-color);
+            color: var(--bg-color);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .copy-btn.copied {
             background-color: var(--text-color);
             color: var(--bg-color);
         }
@@ -295,6 +332,7 @@
                 <div class="input-group">
                     <label for="sentence" class="select-none">Введите текст:</label>
                     <textarea id="sentence" placeholder="Введите текст для кодирования..."></textarea>
+                    <button class="clear-btn" id="clear-btn" type="button">×</button>
                 </div>
                 
                 <div class="input-group">
@@ -312,7 +350,7 @@
                 <h2 class="result-title select-none">Результат:</h2>
                 <div class="result-content">
                     <div id="result">Здесь появится результат кодирования...</div>
-                    <button class="copy-btn" id="copy-btn">Скопировать результат</button>
+                    <button class="copy-btn" id="copy-btn" disabled>Скопировать результат</button>
                 </div>
             </section>
 
@@ -361,7 +399,12 @@
         }
 
         createStars();
-        window.addEventListener('resize', createStars);
+        
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(createStars, 250);
+        });
 
         function snakeEncode(sentence, n) {
             if (n <= 0) return [];
@@ -409,26 +452,61 @@
             resultElement.textContent = formatResult(result);
         }
 
+        function updateCopyButton() {
+            const copyBtn = document.getElementById('copy-btn');
+            const resultText = document.getElementById('result').textContent;
+            const isEmptyResult = resultText === "Здесь появится результат кодирования..." || 
+                                                     resultText === "Нет данных для отображения";
+            
+            copyBtn.disabled = isEmptyResult;
+        }
+
         function updateResult() {
             const sentence = document.getElementById('sentence').value;
             const n = parseInt(document.getElementById('n').value);
             
             if (!sentence.trim() || isNaN(n) || n < 1) {
                 document.getElementById('result').textContent = "Здесь появится результат кодирования...";
+                updateCopyButton();
                 return;
             }
             
             const result = snakeEncode(sentence, n);
             displayResult(result);
+            
+            resetCopyButton();
+            updateCopyButton();
         }
 
         function copyToClipboard() {
             const resultText = document.getElementById('result').textContent;
+            const copyBtn = document.getElementById('copy-btn');
+            
             navigator.clipboard.writeText(resultText).then(() => {
-                alert('Результат скопирован в буфер обмена!');
+                copyBtn.textContent = 'Скопировано';
+                copyBtn.classList.add('copied');
             }).catch(err => {
                 console.error('Ошибка копирования: ', err);
             });
+        }
+
+        function resetCopyButton() {
+            const copyBtn = document.getElementById('copy-btn');
+            copyBtn.textContent = 'Скопировать результат';
+            copyBtn.classList.remove('copied');
+        }
+
+        function clearTextarea(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            document.getElementById('sentence').value = '';
+            document.getElementById('sentence').focus();
+            
+            updateResult();
+            
+            const clearBtn = document.getElementById('clear-btn');
+            clearBtn.blur();
         }
 
         let updateTimeout;
@@ -466,6 +544,10 @@
         });
 
         document.getElementById('copy-btn').addEventListener('click', copyToClipboard);
+        document.getElementById('clear-btn').addEventListener('click', clearTextarea);
+        document.getElementById('clear-btn').addEventListener('mousedown', function(e) {
+            e.preventDefault();
+        });
 
         updateResult();
     </script>
