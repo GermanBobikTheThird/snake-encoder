@@ -49,15 +49,29 @@
             height: 100%;
             z-index: -1;
             pointer-events: none;
+            /* Оптимизация для мобильных */
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            perspective: 1000;
         }
 
         .star {
-            box-shadow: 0px 0px 1px 1px rgba(255, 255, 255, 0.4);
             position: absolute;
             width: 1px;
             height: 1px;
             border-radius: 2px;
             background-color: white;
+            /* Упрощенная анимация */
+            animation: twinkle 3s infinite ease-in-out;
+            /* Оптимизация анимации */
+            will-change: opacity;
+            transform: translate3d(0, 0, 0);
+        }
+
+        /* CSS анимация вместо JS */
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.7; }
         }
 
         .container {
@@ -313,44 +327,41 @@
     </div>
 
     <script>
-        function createStars(count) {
-            for (var i = 0; i < count; i++) {
-                drawStars();
+        function getStarCount() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            if (isMobile || width < 768) {
+                return Math.min(50, Math.floor((width * height) / 5000));
+            }
+            
+            return Math.min(150, Math.floor((width * height) / 3000));
+        }
+
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = getStarCount();
+            
+            starsContainer.innerHTML = '';
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = "star";
+                
+                star.style.top = (100 * Math.random()) + '%';
+                star.style.left = (100 * Math.random()) + '%';
+                
+                star.style.animationDelay = (Math.random() * 5) + 's';
+                
+                star.style.animationDuration = (2 + Math.random() * 4) + 's';
+                
+                starsContainer.appendChild(star);
             }
         }
 
-        function drawStars(){
-            var tmpStar = document.createElement('div');
-            tmpStar.className = "star";
-            tmpStar.style.top = 100*Math.random()+'%';
-            tmpStar.style.left = 100*Math.random()+'%';
-            document.getElementById('stars').appendChild(tmpStar);
-        }
-
-        function selectStars() {
-            stars = document.querySelectorAll(".star");
-        }
-
-        function animateStars() {
-            if (!window.stars) return;
-            
-            Array.prototype.forEach.call(stars, function(el, i){
-                const duration = Math.random() * 2000 + 1000;
-                const delay = Math.random() * 1000;
-                
-                setTimeout(() => {
-                    el.style.opacity = Math.random() * 0.7 + 0.3;
-                    setTimeout(() => {
-                        el.style.opacity = Math.random() * 0.5 + 0.1;
-                        animateStars();
-                    }, duration/2);
-                }, delay);
-            });
-        }
-
-        createStars(200);
-        selectStars();
-        animateStars();
+        createStars();
+        window.addEventListener('resize', createStars);
 
         function snakeEncode(sentence, n) {
             if (n <= 0) return [];
@@ -420,8 +431,15 @@
             });
         }
 
-        document.getElementById('sentence').addEventListener('input', updateResult);
-        document.getElementById('n').addEventListener('input', updateResult);
+        let updateTimeout;
+        function debouncedUpdate() {
+            clearTimeout(updateTimeout);
+            updateTimeout = setTimeout(updateResult, 100);
+        }
+
+        document.getElementById('sentence').addEventListener('input', debouncedUpdate);
+        document.getElementById('n').addEventListener('input', debouncedUpdate);
+        
         document.getElementById('n').addEventListener('beforeinput', function(e) {
             if (e.data && !/[0-9]/.test(e.data)) {
                 e.preventDefault();
@@ -446,7 +464,6 @@
                 e.preventDefault();
             }
         });
-
 
         document.getElementById('copy-btn').addEventListener('click', copyToClipboard);
 
