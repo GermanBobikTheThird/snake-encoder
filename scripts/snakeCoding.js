@@ -14,13 +14,15 @@ export const getOptimalMatrixSizes = (textLength, numberOfValues = constants.DEF
     return optimalSizes;
 };
 
-export const encodeSnake = (sentence, matrixHeight) => {
+export const encodeSnake = (sentence, matrixHeight, invert = false) => {
     if (matrixHeight <= 0) return [];
 
     const words = sentence.match(/[a-zA-Zа-яА-ЯёЁ]+/g) || [];
-    const text = words.join('').toUpperCase();
+    let text = words.join('').toUpperCase();
 
-    if (!text) return [];
+    if (invert) {
+        text = text.split('').reverse().join('');
+    }
 
     const textLength = text.length;
     if (matrixHeight === 1) return [text];
@@ -44,7 +46,18 @@ export const encodeSnake = (sentence, matrixHeight) => {
     return matrix;
 };
 
-export const formatMatrix = (matrix) => {
+export const formatMatrix = (matrix, outputMode) => {
     if (!matrix.length) return constants.EMPTY_RESULT_MESSAGE;
-    return matrix.map(row => row.split('').join(' ')).join('\n');
+
+    switch (outputMode) {
+        case constants.OUTPUT_MODES.GRID:
+            return matrix.map(row => row.split('').join(' ')).join('\n');
+        case constants.OUTPUT_MODES.SENTENCE:
+            const str = matrix.map(row => row).join(', ').toLowerCase() + '.';
+            return str[0].toUpperCase() + str.slice(1);
+        case constants.OUTPUT_MODES.FULL:
+            return matrix.join('').toLowerCase();
+        default:
+            return matrix.map(row => row.split('').join(' ')).join('\n');
+    }
 };
