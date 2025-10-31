@@ -24,6 +24,19 @@
         <main>
             <section class="result-section">
                 <h2 class="result-title select-none">Результат:</h2>
+                <div class="input-group">
+                <div class="output-mode-selector">
+                    <label class="select-none">
+                        <input type="radio" name="output-mode" value="grid" checked> Сетка
+                    </label>
+                    <label class="select-none">
+                        <input type="radio" name="output-mode" value="sentence"> Предложение
+                    </label>
+                    <label class="select-none">
+                        <input type="radio" name="output-mode" value="full"> Целиком
+                    </label>
+                </div>
+                </div>
                 <div class="result-content">
                     <div id="result">
                         Здесь появится результат кодирования...
@@ -59,6 +72,11 @@
                     <label for="sentence" class="select-none">
                         Введите текст:
                     </label>
+                    <div class="input-group">
+                        <label for="invert" class="select-none" id="invert-label">
+                            <input type="checkbox" id="invert"> Инвертировать строку
+                        </label>
+                    </div>
                     <textarea
                         id="sentence"
                         placeholder="Введите текст для кодирования...">
@@ -72,10 +90,11 @@
 
         <footer>
             <p class="select-none">Змеиный кодер &copy; 2025 | Псиоп</p>
-            <p class="select-none" id="disclaimer">Перевод обратно силами людей</p>
+            <p class="select-none" id="disclaimer">
+                Перевод обратно силами людей
+            </p>
         </footer>
     </div>
     <script type="module" src="./scripts/main.js"></script>
 </body>
 </html>
-
