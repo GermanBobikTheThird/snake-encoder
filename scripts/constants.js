@@ -12,3 +12,9 @@ export const NUMBER_INPUT = { MIN: 1, MAX: 666 };
 export const DEFAULT_RESULT_MESSAGE = "Здесь появится результат кодирования...";
 export const EMPTY_RESULT_MESSAGE = "Нет данных для отображения";
 export const DEFAULT_NUMBER_OF_OPTIMAL_VALUES = 5;
+
+export const OUTPUT_MODES = Object.freeze({
+      GRID: 'grid',
+  SENTENCE: 'sentence', 
+      FULL: 'full'
+});
