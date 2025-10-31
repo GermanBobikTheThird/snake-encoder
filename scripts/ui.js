@@ -16,6 +16,8 @@ const UIHandler = (() => {
         optimalValues: document.getElementById('optimal-values'),
         floatingHeader: document.getElementById('floating-header'),
         mainHeader: document.querySelector('header'),
+        invert: document.getElementById('invert'),
+        outputModeRadios: document.querySelectorAll('input[name="output-mode"]'),
     };
 
     const handleScroll = () => {
@@ -24,7 +26,7 @@ const UIHandler = (() => {
             const mainHeader = elements.mainHeader;
             const floatingHeader = elements.floatingHeader;
             const headerRect = mainHeader.getBoundingClientRect();
-            
+
             if (headerRect.bottom < 0) {
                 floatingHeader.classList.add('visible');
             } else {
@@ -39,7 +41,7 @@ const UIHandler = (() => {
         const optimalSizes = getOptimalMatrixSizes(text.length, constants.DEFAULT_NUMBER_OF_OPTIMAL_VALUES);
 
         const container = elements.optimalValues;
-        
+
         if (!optimalSizes || optimalSizes.length === 0) {
             container.innerHTML = '';
             return;
@@ -73,6 +75,8 @@ const UIHandler = (() => {
     const updateResult = () => {
         const sentence = elements.sentence.value.trim();
         const matrixHeight = parseInt(elements.n.value);
+        const invert = elements.invert.checked;
+        const outputMode = document.querySelector('input[name="output-mode"]:checked').value;
 
         if (!sentence || isNaN(matrixHeight) || matrixHeight < constants.NUMBER_INPUT.MIN) {
             requestAnimationFrame(() => {
@@ -83,8 +87,8 @@ const UIHandler = (() => {
         }
 
         requestAnimationFrame(() => {
-            const result = encodeSnake(sentence, matrixHeight);
-            elements.result.textContent = formatMatrix(result);
+            const result = encodeSnake(sentence, matrixHeight, invert);
+            elements.result.textContent = formatMatrix(result, outputMode);
             resetCopyButton();
             updateCopyButton();
         });
@@ -131,7 +135,7 @@ const UIHandler = (() => {
     const changeMatrixHeight = (delta) => {
         let currentValue = parseInt(elements.n.value) || constants.NUMBER_INPUT.MIN;
         const newValue = Math.max(constants.NUMBER_INPUT.MIN,
-                         Math.min(constants.NUMBER_INPUT.MAX, currentValue + delta));
+            Math.min(constants.NUMBER_INPUT.MAX, currentValue + delta));
         elements.n.value = newValue;
         updateResult();
     };
@@ -159,6 +163,10 @@ const UIHandler = (() => {
         elements.copyBtn.addEventListener('click', copyToClipboard);
         elements.clearBtn.addEventListener('click', clearInput);
         elements.clearBtn.addEventListener('mousedown', e => e.preventDefault());
+        elements.invert.addEventListener('change', debouncedUpdate);
+        elements.outputModeRadios.forEach(radio => {
+            radio.addEventListener('change', debouncedUpdate);
+        });
 
         window.addEventListener('scroll', handleScroll);
 
